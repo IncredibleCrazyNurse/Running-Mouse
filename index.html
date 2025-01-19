@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+
+<body >
+
+	<div id="border">		
+		<img src="food_cheese_emmental.png" id="objective" style="display:none">
+		<img src="rat.png" id="hero" style="display:none">
+		<img src="cat.png" id="enemy" style="display:none">
+		<img src="explosion.png" id="explosion" style="display:none">
+		<img src="happy_mouse.png" id="happy_mouse" style="display: none">
+		<img src="title.png" id="title" style="display:""">
+
+	</div>
+	<img src="catchUp.png" id="catchUp" style="display:none">
+	<img src="escape.png" id="escaping" style="display:none">
+
+	<style>
+
+		body {
+			background-color: white;
+			color:white;
+		}
+
+		#explosion{
+			position: absolute;
+			width:800px;
+			height:450px;
+		}
+
+		#happy_mouse{
+			position: absolute;
+			width:800px;
+			height:450px;
+		}
+
+		#catchUp{
+			position: absolute;
+			left:10px;
+			top:465px;
+			width: 239px;
+			height: 108px;
+		}
+
+		#escaping{
+			position: absolute;
+			left:550px;
+			top:465px;
+			width: 239px;
+			height: 108px;
+		}
+
+		#objective{
+			position: absolute;
+			left:300px;
+			top:125px;
+			width:200px;
+			height:200px;
+		}
+
+		#hero{
+			position: absolute;
+			left: 600px;
+			top: 150px;
+			width: 50px;
+			height: 50px;
+		}
+
+		#enemy{
+			position: absolute;
+			left:300px;
+			top:150px;
+			width:100px;
+			height:100px;
+		}
+
+		#border{
+			position:absolute;
+			left: 10px;
+			top: 10px;
+			border:1px solid black;
+			width: 800px;
+			height: 450px;
+
+			overflow: hidden;
+		}
+
+		#title{
+			position: absolute;
+			left: 10px;
+			top:10px;
+			width:800px;
+			height:450px;
+			opacity: 1;
+		}
+
+
+
+	</style>
+
+
+	<script>
+
+		var title=document.getElementById('title');
+		var objective={
+			element:document.getElementById('objective'),
+			x:300,
+			y:125,
+			width:200,
+			height:200
+		}
+
+		objective.left=objective.x;
+		objective.top=objective.y;
+		objective.right=objective.left+objective.width;
+		objective.bottom=objective.top+objective.height;
+
+		//to start game
+		function deleteImage(){
+			title.style.display="none";
+			hero.element.style.display="";
+			enemy.element.style.display="";
+			escaping.style.display="";
+			catchUp.style.display="";
+			objective.element.style.display="";
+			window.removeEventListener('click',deleteImage);
+		}
+		window.addEventListener('click',deleteImage);
+
+		//BGM
+		var song=new Audio('bgm.mp3');
+		function playSong(){
+			window.removeEventListener('click',playSong);
+			song.currentTime=0;
+			song.play();
+		}
+		window.addEventListener('click',playSong);
+
+		//explosion
+		var explosion={
+			element:document.getElementById('explosion'),
+			explode:function(){
+
+				var boom_sound=new Audio("explosion_music.mp3");
+
+				if(hero.touching && !this.isBomb){
+					console.log("danger")
+					this.element.style.display="";
+					this.isBomb=true;
+					boom_sound.currentTime=0;
+					boom_sound.play();
+					song.pause();
+				}
+				else if(!hero.touching && this.isBomb){
+					console.log("safe")
+					this.element.style.display="none";
+					this.isBomb=false;
+				}
+			},
+			touching:false
+		};
+
+		//cheese
+		var happy_mouse={
+			element:document.getElementById('happy_mouse'),
+			eat:function(){
+
+				if(hero.eating && !this.isCheese){
+					console.log("full")
+					this.element.style.display="";
+					this.isCheese=true;
+					song.pause();
+				}
+				else if(!hero.eating && this.isCheese){
+					console.log("hungry")
+					this.element.style.display="none";
+					this.isCheese=false;
+				}
+			},
+			eating:false,
+		};
+
+		var hero={
+			element:document.getElementById('hero'),
+			x:600,
+			y:150,
+			width:50,
+			height:50,
+			speedX:3.5,
+			speedY:3.5,
+			touching:false,
+			eating:false,
+		};
+
+		hero.left=hero.x;
+		hero.top=hero.y;
+		hero.right=hero.left+hero.width;
+		hero.bottom=hero.top+hero.height;
+
+		var enemy={
+			element:document.getElementById('enemy'),
+			x:300,
+			y:150,
+			width:100,
+			height:100,
+			speedX:3,
+			speedY:3,
+			sound:function(){
+				var sound=new Audio("explosion_music.wav");
+				if(enemy.touching && !this.isGreen){
+					sound.play();
+					this.isGreen=true;
+
+				}
+				else if(!enemy.touching && this.isGreen){
+					this.isGreen=false;
+				}
+			},
+			touching:false,
+		};
+
+		enemy.left=enemy.x;
+		enemy.top=enemy.y;
+		enemy.right=enemy.left+enemy.width;
+		enemy.bottom=enemy.top+enemy.height;
+
+		var border={
+			element:document.getElementById('border'),
+			right:800,
+			left:1,
+			top:1,
+			bottom:450,
+		};
+
+		var arrows={
+			ArrowLeft:false,
+			ArrowUp:false,
+			ArrowRight:false,
+			ArrowDown:false,
+		};
+
+		var wasd={
+			w:false,
+			a:false,
+			s:false,
+			d:false,
+		};
+
+		function getKeysDown(event){
+			console.log(event);
+			if(arrows[event.key]===false){
+				event.preventDefault();
+				arrows[event.key]=true;
+			}
+			if(arrows[event.key]===true){
+				event.preventDefault();
+			}
+			console.log(arrows);
+		};
+
+		function getWasdDown(event){
+			if(wasd[event.key]===false){
+				event.preventDefault();
+				wasd[event.key]=true;	
+			}
+			if(wasd[event.key]===true){
+				event.preventDefault();
+			}
+			console.log(wasd);
+		};
+
+		window.addEventListener('keydown', getKeysDown);
+		window.addEventListener('keydown', getWasdDown);
+
+		function getKeysUp(event){
+			if(arrows[event.key]===true){
+				arrows[event.key]=false;
+			}
+			console.log(arrows);
+		};
+
+		function getWasdUp(event){
+			if(wasd[event.key]===true){
+				wasd[event.key]=false;	
+			}
+			console.log(wasd);
+		};
+
+		window.addEventListener('keyup', getKeysUp);
+		window.addEventListener('keyup', getWasdUp);
+
+
+		//function draw() is just a difinition
+		//draw() call draw function
+		function  draw(){
+
+			var dx=0;
+			var dy=0;
+			var edx=0;
+			var edy=0;
+
+			if(!(enemy.right<hero.left||
+				enemy.left>hero.right||
+				enemy.top>hero.bottom||
+				enemy.bottom<hero.top)){
+
+				console.log('touching');
+				hero.touching=true;
+				hero.speedX=0;
+				hero.speedY=0;
+				enemy.speedX=0;
+				enemy.speedY=0;
+				hero.element.style.display="none";
+				enemy.element.style.display="none";
+				objective.element.style.display="none";
+			}
+
+			else{
+				hero.touching=false;
+			}
+			explosion.explode();
+
+			//toching detecting
+
+			if(!(objective.right<hero.left||
+				objective.left>hero.right||
+				objective.top>hero.bottom||
+				objective.bottom<hero.top)){
+
+				console.log('eating');
+				hero.eating=true;
+				hero.speedX=0;
+				hero.speedY=0;
+				enemy.speedX=0;
+				enemy.speedY=0;
+				hero.element.style.display="none";
+				enemy.element.style.display="none";
+				objective.element.style.display="none";
+			}
+
+			else{
+				hero.eating=false;
+			}
+			happy_mouse.eat();
+
+			//eating detecting
+
+
+
+
+
+
+
+
+			if (arrows.ArrowRight) {
+				if(hero.right>=border.right+hero.width){
+					console.log('over border right');
+					hero.x=border.left-hero.width;
+			 	}
+			 	else{
+			 		dx=dx+hero.speedX;
+			 	}
+			};
+
+			if (arrows.ArrowLeft) {
+				if (hero.left<=border.left-hero.width) {
+					console.log('over border left');
+					hero.x=border.right;
+				}
+				else{
+					dx=dx-hero.speedX;
+				}
+			};
+
+			if (arrows.ArrowUp) {
+				if (hero.top<=border.top-hero.height) {
+			  		console.log('over border top')
+			  		hero.y=border.bottom;
+			  	}
+			  	else{
+					dy=dy-hero.speedY;
+			  	}
+			};
+
+			if (arrows.ArrowDown) {
+				if (hero.bottom>=border.bottom+hero.height) {
+					console.log('over border bottom')
+					hero.y=border.top-hero.height;
+				 }
+				 else{
+				 	dy=dy+hero.speedY;
+				 }
+			};
+
+
+
+
+
+
+
+
+
+
+
+			if (wasd.d) {
+				if(enemy.right>=border.right){
+					console.log('touching border right');
+			 	}
+			 	else{
+			 		edx=edx+enemy.speedX;
+			 	}
+			};
+
+			if (wasd.a) {
+				if (enemy.left<=border.left) {
+					console.log('touching border left');
+				}
+				else{
+					edx=edx-enemy.speedX;
+				}
+			};
+
+			if (wasd.w) {
+				if (enemy.top<=border.top) {
+			  		console.log('touching border top')
+			  	}
+			  	else{
+					edy=edy-enemy.speedY;
+			  	}
+			};
+
+			if (wasd.s) {
+				if (enemy.bottom>=border.bottom) {
+					console.log('touching border bottom')
+				 }
+				 else{
+				 	edy=edy+enemy.speedY;
+				 }
+			};
+
+			//cat(enemy)-stopping
+			objective.x=objective.x;
+			objective.left=objective.x;
+			objective.right=objective.left+objective.width;
+			objective.y=objective.y;
+			objective.top=objective.y;
+			objective.bottom=objective.top+objective.height;
+			objective.element.style.left=objective.x+'px';
+			objective.element.style.top=objective.y+'px';
+
+			hero.x=hero.x +dx;
+			hero.left=hero.x;
+			hero.right=hero.left + hero.width;
+			hero.y=hero.y +dy;
+			hero.top=hero.y;
+			hero.bottom=hero.top+hero.height;
+			hero.element.style.left=hero.x+ 'px';
+			hero.element.style.top=hero.y+ 'px';
+
+			enemy.x=enemy.x+edx;
+			enemy.left=enemy.x;
+			enemy.right=enemy.left+enemy.width;
+			enemy.y=enemy.y+edy;
+			enemy.top=enemy.y;
+			enemy.bottom=enemy.y+enemy.height;
+			enemy.element.style.left=enemy.x+'px';
+			enemy.element.style.top=enemy.y+'px';
+
+
+			setTimeout(draw,16);
+		};
+
+		draw();
+
+	</script>
+
+</body>
+</html>
